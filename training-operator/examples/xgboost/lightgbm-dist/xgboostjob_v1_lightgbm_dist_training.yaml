@@ -11,11 +11,11 @@ spec:
         spec:
           containers:
           - name: xgboost
-            image: kubeflow/lightgbm-dist-py-test:1.0
+            image: chasechristensen/kf-xgboost:v1
             ports:
             - containerPort: 9991
               name: xgboostjob-port
-            imagePullPolicy: Never
+            imagePullPolicy: Always
             args:
               - --job_type=Train
               - --boosting_type=gbdt
@@ -45,11 +45,11 @@ spec:
         spec:
           containers:
           - name: xgboost
-            image: kubeflow/lightgbm-dist-py-test:1.0
+            image: chasechristensen/kf-xgboost:v1
             ports:
             - containerPort: 9991
               name: xgboostjob-port
-            imagePullPolicy: Never
+            imagePullPolicy: Always
             args:
               - --job_type=Train
               - --boosting_type=gbdt

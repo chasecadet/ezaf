@@ -1,11 +1,10 @@
 apiVersion: kubeflow.org/v1
-
+kind: MPIJob
 metadata:
-  name: tensorflow-mnist
+  name: tensorflow-mnist-elastic
 spec:
   slotsPerWorker: 1
-  runPolicy:
-    cleanPodPolicy: Running
+  cleanPodPolicy: Running
   mpiReplicaSpecs:
     Launcher:
       replicas: 1
@@ -13,29 +12,20 @@ spec:
         spec:
           containers:
           - image: horovod/horovod:0.20.0-tf2.3.0-torch1.6.0-mxnet1.5.0-py3.7-cpu
-            name: mpi
+            name: mpi-launcher
             command:
-            - mpirun
+            - horovodrun
             args:
             - -np
             - "2"
-            - --allow-run-as-root
-            - -bind-to
-            - none
-            - -map-by
-            - slot
-            - -x
-            - LD_LIBRARY_PATH
-            - -x
-            - PATH
-            - -mca
-            - pml
-            - ob1
-            - -mca
-            - btl
-            - ^openib
+            - --min-np
+            - "1"
+            - --max-np
+            - "3"
+            - --host-discovery-script
+            - /etc/mpi/discover_hosts.sh
             - python
-            - /examples/tensorflow2_mnist.py
+            - /examples/elastic/tensorflow2_mnist_elastic.py
             resources:
               limits:
                 cpu: 1
@@ -46,7 +36,7 @@ spec:
         spec:
           containers:
           - image: horovod/horovod:0.20.0-tf2.3.0-torch1.6.0-mxnet1.5.0-py3.7-cpu
-            name: mpi
+            name: mpi-worker
             resources:
               limits:
                 cpu: 2

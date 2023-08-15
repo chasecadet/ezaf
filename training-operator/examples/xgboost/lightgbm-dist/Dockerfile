@@ -6,12 +6,21 @@ ENV PATH $CONDA_DIR/bin:$PATH
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
-    cmake \
     build-essential \
     gcc \
     g++ \
     git \
-    curl && \
+    curl \
+    libssl-dev && \
+    # Install specific CMake version
+    curl -sLO https://github.com/Kitware/CMake/releases/download/v3.22.0/cmake-3.22.0.tar.gz && \
+    tar -xzvf cmake-3.22.0.tar.gz && \
+    cd cmake-3.22.0 && \
+    ./bootstrap && \
+    make -j$(nproc) && \
+    make install && \
+    cd .. && \
+    rm -rf cmake-3.22.0 cmake-3.22.0.tar.gz && \
     # python environment
     curl -sL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o conda.sh && \
     /bin/bash conda.sh -f -b -p $CONDA_DIR && \
@@ -21,14 +30,12 @@ RUN apt-get update && \
     # lightgbm
     conda install -q -y numpy==1.20.3 scipy==1.6.2 scikit-learn==0.24.2 pandas==1.3.0 && \
     git clone --recursive --branch stable --depth 1 https://github.com/Microsoft/LightGBM && \
-    mkdir LightGBM/build && \
-    cd LightGBM/build && \
-    cmake .. && \
+    cd LightGBM && \
+    cmake . && \
     make -j4 && \
     make install && \
-    sh ./build-python.sh install 
-    cd ../python-package && \
-    python setup.py install_lib && \
+    chmod +x build-python.sh && \
+    sh ./build-python.sh install && \
     # clean
     apt-get autoremove -y && apt-get clean && \
     conda clean -a -y && \

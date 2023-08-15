@@ -9,9 +9,12 @@ spec:
     Launcher:
       replicas: 1
       template:
+        metadata:
+         annotations:
+           sidecar.istio.io/inject: "false"
         spec:
           containers:
-          - image: horovod/horovod:0.20.0-tf2.3.0-torch1.6.0-mxnet1.5.0-py3.7-cpu
+          - image: chasechristensen/horovod:0.20.0-tf2.3.0-torch1.6.0-mxnet1.5.0-py3.7-cpu
             name: mpi-launcher
             command:
             - horovodrun
@@ -33,9 +36,12 @@ spec:
     Worker:
       replicas: 2
       template:
+        metadata:
+          annotations: 
+            sidecar.istio.io/inject: "false"      
         spec:
           containers:
-          - image: horovod/horovod:0.20.0-tf2.3.0-torch1.6.0-mxnet1.5.0-py3.7-cpu
+          - image: chasechristensen/horovod:0.20.0-tf2.3.0-torch1.6.0-mxnet1.5.0-py3.7-cpu
             name: mpi-worker
             resources:
               limits:
