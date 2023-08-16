@@ -6,7 +6,7 @@ spec:
   jobMode: MXTrain
   mxReplicaSpecs:
     Scheduler:
-      replicas: 1
+      replicas: 2
       restartPolicy: Never
       template:
         metadata:
@@ -17,8 +17,11 @@ spec:
             - name: mxnet
               image: chasechristensen/mxtrain:1.0
               imagePullPolicy: Always
+              ports:
+              - containerPort: 9991
+                name: mxjob-port
     Server:
-      replicas: 1
+      replicas: 2
       restartPolicy: Never
       template:
         metadata:
@@ -29,14 +32,23 @@ spec:
             - name: mxnet
               image: chasechristensen/mxtrain:1.0
               imagePullPolicy: Always
+              ports:
+              - containerPort: 9991
+                name: mxjob-port
     Worker:
-      replicas: 1
+      replicas: 3
       restartPolicy: Never
       template:
+        metadata:
+          annotations:
+            sidecar.istio.io/inject: "false"
         spec:
           containers:
             - name: mxnet
               image: chasechristensen/mxtrain:1.0
               command: ["python3"]
-              args: ["incubator-mxnet/example/image-classification/train_mnist.py","--num-epochs","10","--num-layers","2","--kv-store","dist_device_sync","--gpus","0"]
+              args: ["incubator-mxnet/example/image-classification/train_mnist.py","--num-epochs","10","--num-layers","2","--kv-store","dist_device_sync"]
               imagePullPolicy: Always
+              ports:
+              - containerPort: 9991
+                name: mxjob-port

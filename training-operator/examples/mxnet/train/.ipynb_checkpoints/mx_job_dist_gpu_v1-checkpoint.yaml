@@ -17,6 +17,9 @@ spec:
             - name: mxnet
               image: chasechristensen/mxtrain:1.0
               imagePullPolicy: Always
+              ports:
+              - containerPort: 9991
+               name: mxjob-port
     Server:
       replicas: 1
       restartPolicy: Never
@@ -29,6 +32,9 @@ spec:
             - name: mxnet
               image: chasechristensen/mxtrain:1.0
               imagePullPolicy: Always
+              ports:
+              - containerPort: 9991
+               name: mxjob-port
     Worker:
       replicas: 1
       restartPolicy: Never
@@ -38,5 +44,8 @@ spec:
             - name: mxnet
               image: chasechristensen/mxtrain:1.0
               command: ["python3"]
-              args: ["incubator-mxnet/example/image-classification/train_mnist.py","--num-epochs","10","--num-layers","2","--kv-store","dist_device_sync","--gpus","0"]
+              args: ["incubator-mxnet/example/image-classification/train_mnist.py","--num-epochs","10","--num-layers","2","--kv-store","dist_device_sync"]
               imagePullPolicy: Always
+              ports:
+              - containerPort: 9991
+               name: mxjob-port

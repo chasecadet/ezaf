@@ -36,10 +36,10 @@ spec:
             - name: mxnet
               image: mxjob/mxnet:gpu
               command: ["python"]
-              args: ["/incubator-mxnet/example/image-classification/train_mnist.py","--num-epochs","10","--num-layers","2","--kv-store","dist_device_sync","--gpus","0"]
+              args: ["/incuba","--num-epochs","10","--num-layers","2","--kv-store","dist_device_sync","--gpus","0"]
               resources:
                 limits:
                   nvidia.com/gpu: 1
               ports:
               - containerPort: 9991
-                name: mxjob-port
+               name: mxjob-port
