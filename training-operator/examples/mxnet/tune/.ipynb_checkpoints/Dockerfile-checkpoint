@@ -1,58 +1,56 @@
-FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu16.04
+FROM ubuntu:20.04
 
-# Download usefull tools and mxnet, tvm
+ENV DEBIAN_FRONTEND=noninteractive
+
 WORKDIR /home/scripts
-RUN apt-get update && apt-get install -y git vim cmake wget sed && \
-    git clone --recursive https://github.com/dmlc/tvm && \
-    git clone --recursive https://github.com/apache/incubator-mxnet mxnet
 
-# Download necessary dependence
-RUN apt-get update && \
-    apt-get install -y python3 python3-dev python3-setuptools gcc libtinfo-dev zlib1g-dev && \
-    apt-get install -y python3-pip && \
-    apt-get install -y build-essential
+# Install all required tools and libraries in one step to reduce layers and optimize build time
+RUN apt-get update && apt-get install -y \
+    git vim cmake wget sed python3 python3-dev python3-setuptools gcc libtinfo-dev zlib1g-dev \
+    python3-pip build-essential libopenblas-dev liblapack-dev libopencv-dev software-properties-common gpg \
+    libtinfo5 && \
+    rm -rf /var/lib/apt/lists/* # Cleanup to reduce image size
 
-# mxnet dependence
-RUN apt-get install -y libopenblas-dev liblapack-dev && \
-    apt-get install -y libopencv-dev
+# Python packages installation
+RUN pip3 install --upgrade pip && \
+    pip3 install --user numpy decorator tornado psutil xgboost mxnet
 
-# tvm dependence
-RUN pip3 install --user numpy decorator && \
-    pip3 install --user tornado psutil xgboost
+# Clone repositories
+RUN git clone --recursive https://github.com/dmlc/tvm
 
-# get llvm 4.0.0 for tvm
+# Download, extract, and setup LLVM
 RUN wget http://releases.llvm.org/4.0.0/clang+llvm-4.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz && \
     tar -xf clang+llvm-4.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz && \
     mv clang+llvm-4.0.0-x86_64-linux-gnu-ubuntu-16.04 llvm && \
     rm clang+llvm-4.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz
 
-# Compile mxnet
-RUN cd mxnet && \
-    make clean && \
-    make -j $(nproc) USE_OPENCV=1 USE_BLAS=openblas USE_DIST_KVSTORE=1 USE_CUDA=1 USE_CUDA_PATH=/usr/local/cuda USE_CUDNN=1
+# Set the default Python version to Python 3
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 
-# Install mxnet
-RUN cd mxnet/python && \
-    pip3 install -e .
+# Install latest CMake
+RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor > /usr/share/keyrings/kitware-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ focal main" > /etc/apt/sources.list.d/kitware.list && \
+    apt-get update && \
+    apt-get install -y cmake && \
+    rm -rf /var/lib/apt/lists/* # Cleanup again
 
-# Compile tvm
+# Compile and install TVM
 RUN cd tvm && \
     mkdir build && \
     cp cmake/config.cmake build && \
     cd build && \
     sed -i 's/set(USE_LLVM OFF)/set(USE_LLVM ..\/..\/llvm\/bin\/llvm-config)/g' config.cmake && \
-    cmake .. && \
-    make -j $(nproc)
+    cmake -Wno-dev .. && \
+    make -j $(nproc) && \
+    cd ../python; python3 setup.py install --user && \
+    cd ../topi/python; python3 setup.py install --user && \
+    cd ../../nnvm/python; python3 setup.py install --user
 
-# Install tvm
-RUN cd tvm && \
-    cd python; python3 setup.py install --user; cd .. && \
-    cd topi/python; python3 setup.py install --user; cd ../.. && \
-    cd nnvm/python; python3 setup.py install --user; cd ../..
-
-# COPY custom code to container
+# Copy custom code to container
 COPY start-job.py .
 COPY auto-tuning.py .
 
 # Change working path
 WORKDIR /home/log
+
+CMD ["python", "-c", "import mxnet; print(mxnet.__version__)"]
