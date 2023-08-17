@@ -9,33 +9,42 @@ spec:
       replicas: 1
       restartPolicy: Never
       template:
-        spec:
+        metadata:
+          annotations: 
+            sidecar.istio.io/inject: "false"
+        spec:    
           containers:
           - name: mxnet
-            image: mxjob/auto-tuning:gpu
+            image: chasechristensen/mxtune:1.0
+            imagePullPolicy: Always
             command: ["python3"]
             args: ["/home/scripts/start-job.py"]
     TunerServer:
-      label: 2080ti
       replicas: 1
       restartPolicy: Never
       template:
-        spec:
+        metadata:
+          annotations: 
+            sidecar.istio.io/inject: "false"       
+        spec:     
           containers:
           - name: mxnet
-            image: mxjob/auto-tuning:gpu
+            image: chasechristensen/mxtune:1.0
+            imagePullPolicy: Always
             command: ["python3"]
             args: ["/home/scripts/start-job.py"]
-            resources:
-              limits:
-                nvidia.com/gpu: 1
     Tuner:
       replicas: 1
       restartPolicy: Never
       template:
+        metadata:
+          annotations: 
+            sidecar.istio.io/inject: "false" 
         spec:
           containers:
           - name: mxnet
-            image: mxjob/auto-tuning:gpu
+            image: chasechristensen/mxtune:1.0
             command: ["python3"]
             args: ["/home/scripts/start-job.py"]
+            imagePullPolicy: Always
+
