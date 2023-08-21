@@ -1,4 +1,5 @@
-apiVersion: "kubeflow.org/v1"
+#paddle paddle job for the paddleoperator 
+apiVersion: batch.paddlepaddle.org/v1
 kind: PaddleJob
 metadata:
   name: paddle-simple-cpu
@@ -12,13 +13,14 @@ spec:
         spec:
           containers:
             - name: paddle
-              image: registry.baidubce.com/paddlepaddle/paddle:2.4.0rc0-cpu
+              image: chasechristensen/paddle_cpu:1.0
               command:
                 - python
               args:
                 - "-m"
                 - paddle.distributed.launch
                 - "run_check"
+                - "paddle_train_dist.py"
               ports:
                 - containerPort: 37777
                   name: master
