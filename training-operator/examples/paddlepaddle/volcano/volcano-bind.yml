@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: volcano-crd-full-access-binding
+  namespace: chase
+subjects:
+- kind: ServiceAccount
+  name: default-editor
+  namespace: chase
+roleRef:
+  kind: Role
+  name: volcano-crd-full-access
+  apiGroup: rbac.authorization.k8s.io

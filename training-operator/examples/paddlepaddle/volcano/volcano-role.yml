@@ -1,0 +1,23 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: chase
+  name: volcano-crd-full-access
+rules:
+- apiGroups:
+  - bus.volcano.sh
+  - flow.volcano.sh
+  - batch.volcano.sh
+  - nodeinfo.volcano.sh
+  - scheduling.volcano.sh
+  resources:
+  - commands
+  - jobflows
+  - jobs
+  - jobtemplates
+  - numatopologies
+  - podgroups
+  - queues
+  verbs:
+  - get
+  - list
