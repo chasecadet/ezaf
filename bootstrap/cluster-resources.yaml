@@ -42,6 +42,7 @@ spec:
       source:
         path: bootstrap/cluster-resources/{{name}}
         repoURL: https://github.com/chasecadet/ezaf.git
+        recurse: true
       syncPolicy:
         automated:
           allowEmpty: true
