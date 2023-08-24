@@ -59,6 +59,7 @@ subjects:
 - kind: ServiceAccount
   name: paddle-manager-sa
   namespace: paddle-system
+
 ---
 apiVersion: v1
 data:
