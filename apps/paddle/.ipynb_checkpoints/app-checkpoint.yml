@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: paddle
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/chasecadet/ezaf.git
+    targetRevision: HEAD
+    path: manifests/paddle/
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated: {}
