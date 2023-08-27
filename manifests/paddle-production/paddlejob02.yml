@@ -3,6 +3,7 @@ apiVersion: batch.paddlepaddle.org/v1
 kind: PaddleJob
 metadata:
   name: paddle-simple-cpu-volcano02
+  namespace: paddle-production
 spec:
   withGloo: 1
   worker:
