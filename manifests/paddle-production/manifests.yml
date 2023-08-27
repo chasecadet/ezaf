@@ -1,8 +1,0 @@
-#manifests for our production paddle jobs
-apiVersion: v1
-kind: Namespace
-metadata:
-  creationTimestamp: null
-  name: paddle-production
-spec: {}
-status: {}

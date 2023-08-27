@@ -1,0 +1,25 @@
+#manifests for our production paddle jobs
+apiVersion: batch.paddlepaddle.org/v1
+kind: PaddleJob
+metadata:
+  name: paddle-simple-cpu-volcano01
+spec:
+  withGloo: 1
+  worker:
+    replicas: 4
+    template:
+      metadata:
+        annotations: 
+          sidecar.istio.io/inject: "false"
+      spec:
+        schedulerName: volcano           
+        containers:
+          - name: paddle
+            image: chasechristensen/paddle_cpu:1.0
+            command:
+              - python
+            args:
+              - "-m"
+              - paddle.distributed.launch
+              - "paddle_train_dist.py"
+            imagePullPolicy: Always
