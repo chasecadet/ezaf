@@ -1,0 +1,16 @@
+name: Download load preprocess data
+inputs:
+- {name: download_link, type: String}
+outputs:
+- {name: output_data, type: String}
+implementation:
+  container:
+    image: chasechristensen/mnist_process:v1
+    command: [
+      python3,
+      download_load_preprocess_data.py, ]
+    args:
+    - --download-link
+    - {inputValue: download_link}
+    - --output-data
+    - {outputPath: output_data}

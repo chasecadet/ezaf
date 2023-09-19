@@ -1,12 +1,14 @@
-import os
-import zipfile
-import pickle
-import wget
-import pandas as pd
-import numpy as np
-from sklearn.model_selection import train_test_split
+
 
 def download_load_preprocess_data(download_link: str, output_data_path: OutputPath(str)):
+    
+    import os
+    import zipfile
+    import pickle
+    import wget
+    import pandas as pd
+    import numpy as np
+    from sklearn.model_selection import train_test_split
     
     # Check and create output data path
     if not os.path.exists(output_data_path):

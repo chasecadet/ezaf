@@ -1,0 +1,87 @@
+name: Modeling and prediction
+inputs:
+- {name: preprocess_data_path, type: String}
+- {name: model_path, type: String}
+- {name: mlpipeline_ui_metadata_path, type: String}
+outputs:
+- {name: mlpipeline_ui_metadata, type: UI_metadata}
+implementation:
+  container:
+    image: chasechristensen/mnist_predict:v1
+    command:
+    - sh
+    - -ec
+    - |
+      program_path=$(mktemp)
+      printf "%s" "$0" > "$program_path"
+      python3 -u "$program_path" "$@"
+    - "def modeling_and_prediction(preprocess_data_path, \n                      \
+      \      model_path, \n                            mlpipeline_ui_metadata_path):\n\
+      \    import os\n    import pickle\n    import numpy as np\n    import pandas\
+      \ as pd\n    import json\n    from collections import namedtuple\n    from sklearn.metrics\
+      \ import confusion_matrix\n    from tensorflow import keras, optimizers\n  \
+      \  from tensorflow.keras.metrics import SparseCategoricalAccuracy\n    from\
+      \ tensorflow.keras.losses import SparseCategoricalCrossentropy\n    from tensorflow.keras.models\
+      \ import load_model\n    # Step 1: Modeling\n    # Load train data\n    with\
+      \ open(f'{preprocess_data_path}/train', 'rb') as f:\n        train_data = pickle.load(f)\n\
+      \n    # Separate the X_train from y_train.\n    X_train, y_train = train_data\n\
+      \n    # Initializing the model\n    hidden_dim1 = 56\n    hidden_dim2 = 100\n\
+      \    DROPOUT = 0.5\n    model = keras.Sequential([\n            keras.layers.Conv2D(filters=hidden_dim1,\
+      \ kernel_size=(5,5), padding='Same', activation='relu'),\n            keras.layers.Dropout(DROPOUT),\n\
+      \            keras.layers.Conv2D(filters=hidden_dim2, kernel_size=(3,3), padding='Same',\
+      \ activation='relu'),\n            keras.layers.Dropout(DROPOUT),\n        \
+      \    keras.layers.Conv2D(filters=hidden_dim2, kernel_size=(3,3), padding='Same',\
+      \ activation='relu'),\n            keras.layers.Dropout(DROPOUT),\n        \
+      \    keras.layers.Flatten(),\n            keras.layers.Dense(10, activation=\"\
+      softmax\")\n        ])\n\n    model.build(input_shape=(None, 28, 28, 1))\n\n\
+      \    # Compile the model\n    model.compile(optimizers.Adam(learning_rate=0.001),\
+      \ \n                  loss=SparseCategoricalCrossentropy(), \n             \
+      \     metrics=SparseCategoricalAccuracy(name='accuracy'))\n\n    # Fit the model\n\
+      \    model.fit(np.array(X_train), np.array(y_train), validation_split=0.1, epochs=1,\
+      \ batch_size=64)\n\n    # Load test data\n    with open(f'{preprocess_data_path}/test',\
+      \ 'rb') as f:\n        test_data = pickle.load(f)\n\n    # Separate X_test and\
+      \ y_test\n    X_test, y_test = test_data\n\n    # Evaluate the model\n    test_loss,\
+      \ test_acc = model.evaluate(np.array(X_test), np.array(y_test), verbose=0)\n\
+      \    print(\"Test_loss: {}, Test_accuracy: {}\".format(test_loss, test_acc))\n\
+      \n    # Save the model\n    os.makedirs(model_path, exist_ok=True)\n    model.save(f'{model_path}/model.h5')\n\
+      \n    # Step 2: Prediction\n    # Load the model\n    model = load_model(f'{model_path}/model.h5')\n\
+      \n    # Prediction\n    y_pred = np.argmax(model.predict(X_test), axis=-1)\n\
+      \n    # Confusion matrix\n    cm = confusion_matrix(y_test, y_pred)\n    vocab\
+      \ = list(np.unique(y_test))\n\n    # Process confusion matrix data\n    data\
+      \ = [(vocab[target_index], vocab[predicted_index], count) for target_index,\
+      \ target_row in enumerate(cm) for predicted_index, count in enumerate(target_row)]\n\
+      \n    # Create a DataFrame\n    df = pd.DataFrame(data, columns=['target', 'predicted',\
+      \ 'count'])\n    df[['target', 'predicted']] = df[['target', 'predicted']].astype(int).astype(str)\n\
+      \n    # Create metadata\n    metadata = {\n        \"outputs\": [\n        \
+      \    {\n                \"type\": \"confusion_matrix\",\n                \"\
+      format\": \"csv\",\n                \"schema\": [\n                    {\"name\"\
+      : \"target\", \"type\": \"CATEGORY\"},\n                    {\"name\": \"predicted\"\
+      , \"type\": \"CATEGORY\"},\n                    {\"name\": \"count\", \"type\"\
+      : \"NUMBER\"}\n                ],\n                \"source\": df.to_csv(header=False,\
+      \ index=False),\n                \"storage\": \"inline\",\n                \"\
+      labels\": [\"0\", \"1\", \"2\", \"3\", \"4\", \"5\", \"6\", \"7\", \"8\", \"\
+      9\"]\n            }\n        ]\n    }\n\n    # Save metadata\n    with open(mlpipeline_ui_metadata_path,\
+      \ 'w') as metadata_file:\n        json.dump(metadata, metadata_file)\n\n   \
+      \ conf_m_result = namedtuple('conf_m_result', ['mlpipeline_ui_metadata'])\n\n\
+      \    return conf_m_result(json.dumps(metadata))\n\nimport argparse\n_parser\
+      \ = argparse.ArgumentParser(prog='Modeling and prediction', description='')\n\
+      _parser.add_argument(\"--preprocess-data-path\", dest=\"preprocess_data_path\"\
+      , type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"\
+      --model-path\", dest=\"model_path\", type=str, required=True, default=argparse.SUPPRESS)\n\
+      _parser.add_argument(\"--mlpipeline-ui-metadata-path\", dest=\"mlpipeline_ui_metadata_path\"\
+      , type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"\
+      ----output-paths\", dest=\"_output_paths\", type=str, nargs=1)\n_parsed_args\
+      \ = vars(_parser.parse_args())\n_output_files = _parsed_args.pop(\"_output_paths\"\
+      , [])\n\n_outputs = modeling_and_prediction(**_parsed_args)\n\n_output_serializers\
+      \ = [\n    str,\n\n]\n\nimport os\nfor idx, output_file in enumerate(_output_files):\n\
+      \    try:\n        os.makedirs(os.path.dirname(output_file))\n    except OSError:\n\
+      \        pass\n    with open(output_file, 'w') as f:\n        f.write(_output_serializers[idx](_outputs[idx]))\n"
+    args:
+    - --preprocess-data-path
+    - {inputValue: preprocess_data_path}
+    - --model-path
+    - {inputValue: model_path}
+    - --mlpipeline-ui-metadata-path
+    - {inputValue: mlpipeline_ui_metadata_path}
+    - '----output-paths'
+    - {outputPath: mlpipeline_ui_metadata}

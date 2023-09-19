@@ -1,19 +1,19 @@
-import os
-import pickle
-import numpy as np
-import pandas as pd
-import json
-from collections import namedtuple
-from sklearn.metrics import confusion_matrix
-from tensorflow import keras, optimizers
-from tensorflow.keras.metrics import SparseCategoricalAccuracy
-from tensorflow.keras.losses import SparseCategoricalCrossentropy
-from tensorflow.keras.models import load_model
+
 
 def modeling_and_prediction(preprocess_data_path: str, 
                             model_path: str, 
                             mlpipeline_ui_metadata_path: str) -> NamedTuple('conf_m_result', [('mlpipeline_ui_metadata', 'UI_metadata')]):
-
+    import os
+    import pickle
+    import numpy as np
+    import pandas as pd
+    import json
+    from collections import namedtuple
+    from sklearn.metrics import confusion_matrix
+    from tensorflow import keras, optimizers
+    from tensorflow.keras.metrics import SparseCategoricalAccuracy
+    from tensorflow.keras.losses import SparseCategoricalCrossentropy
+    from tensorflow.keras.models import load_model
     # Step 1: Modeling
     # Load train data
     with open(f'{preprocess_data_path}/train', 'rb') as f:
