@@ -12,7 +12,7 @@ def _make_parent_dirs_and_return_path(file_path: str):
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     return file_path
 
-def main(argv=None)):
+def main(argv=None):
     print("oh here we goooooo")
     _parser = argparse.ArgumentParser(prog='Download load preprocess data', description='')
     _parser.add_argument("--download-link", dest="download_link", type=str, required=True, default=argparse.SUPPRESS)

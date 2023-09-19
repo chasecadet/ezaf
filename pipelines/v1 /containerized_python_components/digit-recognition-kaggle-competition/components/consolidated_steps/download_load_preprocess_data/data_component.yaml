@@ -5,7 +5,7 @@ outputs:
 - {name: output_data, type: String}
 implementation:
   container:
-    image: chasechristensen/mnist_process:v1
+    image: chasechristensen/mnist_process:v2
     command: [
       python3,
       download_load_preprocess_data.py]
