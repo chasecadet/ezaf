@@ -8,7 +8,7 @@ implementation:
     image: chasechristensen/mnist_process:v1
     command: [
       python3,
-      download_load_preprocess_data.py, ]
+      download_load_preprocess_data.py]
     args:
     - --download-link
     - {inputValue: download_link}
