@@ -18,7 +18,7 @@ def main(argv=None):
     _parser.add_argument("--download-link", dest="download_link", type=str, required=True, default=argparse.SUPPRESS)
     _parser.add_argument("--output-data", dest="output_data_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
     _parsed_args = vars(_parser.parse_args())
-    _outputs = download_load_preprocess_data(**_parsed_args)    
+    _outputs = main(**_parsed_args)    
     # Check and create output data path
     if not os.path.exists(output_data_path):
         os.makedirs(output_data_path) 
