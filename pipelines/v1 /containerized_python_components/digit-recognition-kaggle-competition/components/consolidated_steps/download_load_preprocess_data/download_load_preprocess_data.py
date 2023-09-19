@@ -1,19 +1,21 @@
+import os
+import zipfile
+import pickle
+import wget
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+import argparse
 
+
+def _make_parent_dirs_and_return_path(file_path: str):
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    return file_path
 
 def download_load_preprocess_data(download_link: str, output_data_path: OutputPath(str)):
-    
-    import os
-    import zipfile
-    import pickle
-    import wget
-    import pandas as pd
-    import numpy as np
-    from sklearn.model_selection import train_test_split
-    
     # Check and create output data path
     if not os.path.exists(output_data_path):
-        os.makedirs(output_data_path)
-    
+        os.makedirs(output_data_path) 
     # Step 1: Download Data
     wget.download(download_link.format(file='train'), f'{output_data_path}/train_csv.zip')
     wget.download(download_link.format(file='test'), f'{output_data_path}/test_csv.zip')
@@ -54,3 +56,9 @@ def download_load_preprocess_data(download_link: str, output_data_path: OutputPa
         pickle.dump((X_test,  y_test), f)
     
     return print('Done!')
+
+_parser = argparse.ArgumentParser(prog='Download load preprocess data', description='')
+_parser.add_argument("--download-link", dest="download_link", type=str, required=True, default=argparse.SUPPRESS)
+_parser.add_argument("--output-data", dest="output_data_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
+_parsed_args = vars(_parser.parse_args())
+_outputs = download_load_preprocess_data(**_parsed_args)

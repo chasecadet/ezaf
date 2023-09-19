@@ -2,7 +2,7 @@
 
 def modeling_and_prediction(preprocess_data_path: str, 
                             model_path: str, 
-                            mlpipeline_ui_metadata_path: str) -> NamedTuple('conf_m_result', [('mlpipeline_ui_metadata', 'UI_metadata')]):
+                            mlpipeline_ui_metadata_path: OutputPath(str)) -> NamedTuple('conf_m_result', [('mlpipeline_ui_metadata', 'UI_metadata')]):
     import os
     import pickle
     import numpy as np

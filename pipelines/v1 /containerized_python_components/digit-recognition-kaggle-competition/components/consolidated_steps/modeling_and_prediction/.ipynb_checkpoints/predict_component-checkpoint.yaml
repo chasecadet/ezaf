@@ -2,7 +2,6 @@ name: Modeling and prediction
 inputs:
 - {name: preprocess_data_path, type: String}
 - {name: model_path, type: String}
-- {name: mlpipeline_ui_metadata_path, type: String}
 outputs:
 - {name: mlpipeline_ui_metadata, type: UI_metadata}
 implementation:
@@ -16,7 +15,5 @@ implementation:
     - {inputValue: preprocess_data_path}
     - --model-path
     - {inputValue: model_path}
-    - --mlpipeline-ui-metadata-path
-    - {inputValue: mlpipeline_ui_metadata_path}
     - '----output-paths'
     - {outputPath: mlpipeline_ui_metadata}
