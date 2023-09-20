@@ -38,8 +38,19 @@ def main():
         zip_ref.extractall(output_data_path)
     with zipfile.ZipFile(f"{output_data_path}/test_csv.zip", "r") as zip_ref:
         zip_ref.extractall(output_data_path)
-    
-    #... (keep the rest of your code here) ...
+   
+    # Step 3: Preprocess Data
+    ntrain = train_df.shape[0]
+    all_data = pd.concat((train_df, test_df)).reset_index(drop=True)
+    print("all_data size is : {}".format(all_data.shape))
+
+    all_data_X = all_data.drop('label', axis=1).values.reshape(-1, 28, 28, 1) / 255.0
+    all_data_y = all_data.label
+
+    X = all_data_X[:ntrain].copy()
+    y = all_data_y[:ntrain].copy()
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42) 
 
     # Step 4: Save Data
     with open(output_train_data_path, 'wb') as f:
