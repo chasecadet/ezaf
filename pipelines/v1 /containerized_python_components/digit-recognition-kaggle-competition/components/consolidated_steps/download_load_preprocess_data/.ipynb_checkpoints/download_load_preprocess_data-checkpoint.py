@@ -16,22 +16,22 @@ def validate_labels(df):
     assert df['label'].notna().all(), "NaN values found in labels"
     assert df['label'].between(0, 9).all(), "Invalid label values found"
 
-def load_and_process_data(data_path, chunk_size):
-    data_chunks = pd.read_csv(data_path, chunksize=chunk_size)
-    chunk_list = []
-
-    for chunk in data_chunks:
-        print(f"Columns in chunk: {chunk.columns}")  # Add this line to debug column names
-        try:
-            chunk = chunk.astype('float32')
-            chunk_list.append(chunk)
-        except Exception as e:
-            print(f"An error occurred: {e}")  # Print the error message if any error occurs
-            continue
-    data_df = pd.concat(chunk_list)
-    del chunk_list
-    gc.collect()
-    return data_df
+def load_and_process_data(data_path, rows_at_a_time=50):
+    with pd.read_csv(data_path, chunksize=rows_at_a_time) as reader:
+        chunk_list = []
+        for chunk in reader:
+            try:
+                chunk = chunk.astype('float32')
+                chunk_list.append(chunk)
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                continue
+        
+        data_df = pd.concat(chunk_list)
+        del chunk_list
+        gc.collect()
+        
+        return data_df
 
 def main():
     print("oh here we goooooo") 
@@ -41,7 +41,7 @@ def main():
     parser.add_argument("--output-test-data", dest="output_test_data_path", type=_make_parent_dirs_and_return_path, required=True)
 
     args = parser.parse_args()
-    chunk_size = 10000  # Adjust based on your memory capacity
+    rows_at_a_time = 50
     download_link = args.download_link
     output_train_data_path = args.output_train_data_path
     output_test_data_path = args.output_test_data_path
@@ -61,8 +61,8 @@ def main():
     train_data_path = os.path.join(output_data_path, 'train.csv')
     test_data_path = os.path.join(output_data_path, 'test.csv')
     
-    train_df = load_and_process_data(train_data_path, chunk_size)
-    test_df = load_and_process_data(test_data_path, chunk_size)
+    train_df = load_and_process_data(train_data_path, rows_at_a_time)
+    test_df = load_and_process_data(test_data_path, rows_at_a_time)
     
     validate_labels(train_df)
     validate_labels(test_df)
