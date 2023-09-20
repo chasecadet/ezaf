@@ -17,13 +17,14 @@ def validate_labels(df):
     assert df['label'].between(0, 9).all(), "Invalid label values found"
 
 def load_and_process_data(data_path, rows_at_a_time=50):
-    with pd.read_csv(data_path, chunksize=rows_at_a_time) as reader:
+    col_names = ['label'] + [f'pixel_{i}' for i in range(1, 29)]
+    with pd.read_csv(data_path, chunksize=rows_at_a_time, header=None, names=col_names) as reader:
         chunk_list = []
         for chunk in reader:
             try:
-                labels = chunk['label'].copy()  # Save the labels before casting
-                chunk = chunk.drop(columns=['label']).astype('float32')
-                chunk['label'] = labels  # Restore the labels after casting
+                labels = chunk['label']
+                features = chunk.drop(columns=['label']).astype('float32')
+                chunk = pd.concat([labels, features], axis=1)
                 chunk_list.append(chunk)
             except Exception as e:
                 print(f"An error occurred: {e}")
