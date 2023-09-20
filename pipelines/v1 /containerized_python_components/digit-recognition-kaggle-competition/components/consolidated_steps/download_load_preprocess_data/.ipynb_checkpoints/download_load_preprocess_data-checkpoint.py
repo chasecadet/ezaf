@@ -21,7 +21,9 @@ def load_and_process_data(data_path, rows_at_a_time=50):
         chunk_list = []
         for chunk in reader:
             try:
-                chunk = chunk.astype('float32')
+                labels = chunk['label'].copy()  # Save the labels before casting
+                chunk = chunk.drop(columns=['label']).astype('float32')
+                chunk['label'] = labels  # Restore the labels after casting
                 chunk_list.append(chunk)
             except Exception as e:
                 print(f"An error occurred: {e}")
@@ -32,6 +34,7 @@ def load_and_process_data(data_path, rows_at_a_time=50):
         gc.collect()
         
         return data_df
+
 
 def main():
     print("oh here we goooooo") 
