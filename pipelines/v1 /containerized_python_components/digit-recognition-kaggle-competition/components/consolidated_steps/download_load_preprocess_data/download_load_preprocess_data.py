@@ -21,16 +21,16 @@ def load_and_process_data(data_path, chunk_size):
     chunk_list = []
 
     for chunk in data_chunks:
-        chunk = chunk.dropna(subset=['label'])  # Removing rows with NaN labels
-        chunk['label'] = chunk['label'].astype(int)  # Ensure label column is of integer type
-        chunk = chunk[chunk['label'].between(0, 9)]  # Removing rows with labels outside the range 0-9
-        chunk = chunk.astype('float32')
-        chunk_list.append(chunk)
-    
+        print(f"Columns in chunk: {chunk.columns}")  # Add this line to debug column names
+        try:
+            chunk = chunk.astype('float32')
+            chunk_list.append(chunk)
+        except Exception as e:
+            print(f"An error occurred: {e}")  # Print the error message if any error occurs
+            continue
     data_df = pd.concat(chunk_list)
     del chunk_list
     gc.collect()
-
     return data_df
 
 def main():
