@@ -3,32 +3,29 @@ import zipfile
 import pickle
 import wget
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
 import argparse
-
 
 def _make_parent_dirs_and_return_path(file_path: str):
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     return file_path
 
-def main(argv=None):
-    print("oh here we goooooo")
-    _parser = argparse.ArgumentParser(prog='Download load preprocess data', description='')
-    _parser.add_argument("--download-link", dest="download_link", type=str, required=True, default=argparse.SUPPRESS)
-    _parser.add_argument("--output-data", dest="output_data_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
-    _parsed_args = vars(_parser.parse_args())
-    _outputs = main(**_parsed_args)    
+def download_load_preprocess_data(download_link: str, output_data_path: str):
+    print("Starting data download and preprocessing...")
+
     # Check and create output data path
-    if not os.path.exists(output_data_path):
-        os.makedirs(output_data_path) 
+    os.makedirs(output_data_path, exist_ok=True)
+
     # Step 1: Download Data
     wget.download(download_link.format(file='train'), f'{output_data_path}/train_csv.zip')
     wget.download(download_link.format(file='test'), f'{output_data_path}/test_csv.zip')
-    with zipfile.ZipFile(f"{output_data_path}/train_csv.zip","r") as zip_ref:
+    
+    with zipfile.ZipFile(f"{output_data_path}/train_csv.zip", "r") as zip_ref:
         zip_ref.extractall(output_data_path)
-    with zipfile.ZipFile(f"{output_data_path}/test_csv.zip","r") as zip_ref:
+
+    with zipfile.ZipFile(f"{output_data_path}/test_csv.zip", "r") as zip_ref:
         zip_ref.extractall(output_data_path)
+
     # Step 2: Load Data
     train_data_path = os.path.join(output_data_path, 'train.csv')
     test_data_path = os.path.join(output_data_path, 'test.csv')
@@ -51,15 +48,25 @@ def main(argv=None):
     y = all_data_y[:ntrain].copy()
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=42)
-    
+
     with open(f'{output_data_path}/train', 'wb') as f:
-        pickle.dump((X_train,  y_train), f)
+        pickle.dump((X_train, y_train), f)
         
     with open(f'{output_data_path}/test', 'wb') as f:
-        pickle.dump((X_test,  y_test), f)
-
+        pickle.dump((X_test, y_test), f)
     
-    return print('Done!')
+    print('Done!')
 
-if __name__== "__main__":
+def main(argv=None):
+    print("oh here we goooooo")
+
+    parser = argparse.ArgumentParser(prog='Download load preprocess data', description='')
+    parser.add_argument("--download-link", dest="download_link", type=str, required=True)
+    parser.add_argument("--output-data", dest="output_data_path", type=_make_parent_dirs_and_return_path, required=True)
+    parsed_args = vars(parser.parse_args())
+
+    download_load_preprocess_data(**parsed_args)
+
+if __name__ == "__main__":
     main()
+
