@@ -5,7 +5,7 @@ FROM python:3.8-slim
 WORKDIR /usr/src/app
 
 # Install necessary libraries
-RUN pip install pandas<2.0.0 numpy scikit-learn tensorflow<3.0
+RUN pip install pandas"<2.0.0" numpy scikit-learn tensorflow"<3.0"
 
 # Copy the current directory contents into the container
 COPY ./modeling_and_prediction.py .
