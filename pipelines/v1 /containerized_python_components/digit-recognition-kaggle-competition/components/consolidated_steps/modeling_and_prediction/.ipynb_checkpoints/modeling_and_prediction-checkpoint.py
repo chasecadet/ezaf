@@ -1,86 +1,67 @@
+import argparse
+from typing import NamedTuple
+import os
+import pickle
+import numpy as np
+import pandas as pd
+import json
+from collections import namedtuple
+from sklearn.metrics import confusion_matrix
+from tensorflow import keras, optimizers
+from tensorflow.keras.metrics import SparseCategoricalAccuracy
+from tensorflow.keras.losses import SparseCategoricalCrossentropy
+from tensorflow.keras.models import load_model
 
-
-def modeling_and_prediction(preprocess_data_path: str, 
-                            model_path: str, 
-                            mlpipeline_ui_metadata_path: OutputPath(str)) -> NamedTuple('conf_m_result', [('mlpipeline_ui_metadata', 'UI_metadata')]):
-    import os
-    import pickle
-    import numpy as np
-    import pandas as pd
-    import json
-    from collections import namedtuple
-    from sklearn.metrics import confusion_matrix
-    from tensorflow import keras, optimizers
-    from tensorflow.keras.metrics import SparseCategoricalAccuracy
-    from tensorflow.keras.losses import SparseCategoricalCrossentropy
-    from tensorflow.keras.models import load_model
-    # Step 1: Modeling
-    # Load train data
-    with open(f'{preprocess_data_path}/train', 'rb') as f:
-        train_data = pickle.load(f)
-        
-    # Separate the X_train from y_train.
-    X_train, y_train = train_data
+def modeling_and_prediction(preprocess_train_data_path, preprocess_test_data_path, model_path, mlpipeline_ui_metadata_path):
+    
+    with open(preprocess_train_data_path, 'rb') as f:
+        X_train, y_train = pickle.load(f)
+    
+    with open(preprocess_test_data_path, 'rb') as f:
+        X_test, y_test = pickle.load(f)
     
     # Initializing the model
     hidden_dim1 = 56
     hidden_dim2 = 100
     DROPOUT = 0.5
     model = keras.Sequential([
-            keras.layers.Conv2D(filters=hidden_dim1, kernel_size=(5,5), padding='Same', activation='relu'),
-            keras.layers.Dropout(DROPOUT),
-            keras.layers.Conv2D(filters=hidden_dim2, kernel_size=(3,3), padding='Same', activation='relu'),
-            keras.layers.Dropout(DROPOUT),
-            keras.layers.Conv2D(filters=hidden_dim2, kernel_size=(3,3), padding='Same', activation='relu'),
-            keras.layers.Dropout(DROPOUT),
-            keras.layers.Flatten(),
-            keras.layers.Dense(10, activation="softmax")
-        ])
+        keras.layers.Conv2D(filters=hidden_dim1, kernel_size=(5,5), padding='Same', activation='relu'),
+        keras.layers.Dropout(DROPOUT),
+        keras.layers.Conv2D(filters=hidden_dim2, kernel_size=(3,3), padding='Same', activation='relu'),
+        keras.layers.Dropout(DROPOUT),
+        keras.layers.Conv2D(filters=hidden_dim2, kernel_size=(3,3), padding='Same', activation='relu'),
+        keras.layers.Dropout(DROPOUT),
+        keras.layers.Flatten(),
+        keras.layers.Dense(10, activation="softmax")
+    ])
 
     model.build(input_shape=(None, 28, 28, 1))
 
-    # Compile the model
     model.compile(optimizers.Adam(learning_rate=0.001), 
                   loss=SparseCategoricalCrossentropy(), 
                   metrics=SparseCategoricalAccuracy(name='accuracy'))
 
-    # Fit the model
-    model.fit(np.array(X_train), np.array(y_train), validation_split=0.1, epochs=1, batch_size=64)
-    
-    # Load test data
-    with open(f'{preprocess_data_path}/test', 'rb') as f:
-        test_data = pickle.load(f)
-    
-    # Separate X_test and y_test
-    X_test, y_test = test_data
-    
-    # Evaluate the model
+    model.fit(np.array(X_train), np.array(y_train), validation_split=0.1, epochs=1, batch_size=64) 
+
     test_loss, test_acc = model.evaluate(np.array(X_test), np.array(y_test), verbose=0)
     print("Test_loss: {}, Test_accuracy: {}".format(test_loss, test_acc))
-    
-    # Save the model
+
     os.makedirs(model_path, exist_ok=True)
     model.save(f'{model_path}/model.h5')
 
     # Step 2: Prediction
-    # Load the model
     model = load_model(f'{model_path}/model.h5')
 
-    # Prediction
     y_pred = np.argmax(model.predict(X_test), axis=-1)
 
-    # Confusion matrix
     cm = confusion_matrix(y_test, y_pred)
     vocab = list(np.unique(y_test))
 
-    # Process confusion matrix data
     data = [(vocab[target_index], vocab[predicted_index], count) for target_index, target_row in enumerate(cm) for predicted_index, count in enumerate(target_row)]
-    
-    # Create a DataFrame
+
     df = pd.DataFrame(data, columns=['target', 'predicted', 'count'])
     df[['target', 'predicted']] = df[['target', 'predicted']].astype(int).astype(str)
-    
-    # Create metadata
+
     metadata = {
         "outputs": [
             {
@@ -98,10 +79,20 @@ def modeling_and_prediction(preprocess_data_path: str,
         ]
     }
 
-    # Save metadata
     with open(mlpipeline_ui_metadata_path, 'w') as metadata_file:
         json.dump(metadata, metadata_file)
 
     conf_m_result = namedtuple('conf_m_result', ['mlpipeline_ui_metadata'])
-    
+
     return conf_m_result(json.dumps(metadata))
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--preprocess-train-data-path', type=str, required=True)
+    parser.add_argument('--preprocess-test-data-path', type=str, required=True)
+    parser.add_argument('--model-path', type=str, required=True)
+    parser.add_argument('--output-paths', type=str, required=True)
+
+    args = parser.parse_args()
+    
+    modeling_and_prediction(args.preprocess_train_data_path, args.preprocess_test_data_path, args.model_path, args.output_paths)

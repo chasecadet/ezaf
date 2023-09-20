@@ -1,19 +1,23 @@
 name: Modeling and prediction
 inputs:
-- {name: preprocess_data_path, type: String}
-- {name: model_path, type: String}
+  - {name: preprocess_train_data_path, type: String}
+  - {name: preprocess_test_data_path, type: String}
+  - {name: model_path, type: String}
 outputs:
-- {name: mlpipeline_ui_metadata, type: UI_metadata}
+  - {name: mlpipeline_ui_metadata, type: UI_metadata}
 implementation:
   container:
     image: chasechristensen/mnist_predict:v1
-    command: [
-     python3,
-      modeling_and_prediction.py,]
+    command: 
+      - python3
+      - modeling_and_prediction.py
     args:
-    - --preprocess-data-path
-    - {inputValue: preprocess_data_path}
-    - --model-path
-    - {inputValue: model_path}
-    - '----output-paths'
-    - {outputPath: mlpipeline_ui_metadata}
+      - --preprocess-train-data-path
+      - {inputValue: preprocess_train_data_path}
+      - --preprocess-test-data-path
+      - {inputValue: preprocess_test_data_path}
+      - --model-path
+      - {inputValue: model_path}
+      - --output-paths
+      - {outputPath: mlpipeline_ui_metadata}
+
