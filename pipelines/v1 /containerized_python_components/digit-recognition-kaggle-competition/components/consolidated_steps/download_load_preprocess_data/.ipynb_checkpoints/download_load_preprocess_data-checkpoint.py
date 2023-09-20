@@ -12,11 +12,18 @@ def _make_parent_dirs_and_return_path(file_path: str):
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     return file_path
 
+def validate_labels(df):
+    assert df['label'].notna().all(), "NaN values found in labels"
+    assert df['label'].between(0, 9).all(), "Invalid label values found"
+
 def load_and_process_data(data_path, chunk_size):
     data_chunks = pd.read_csv(data_path, chunksize=chunk_size)
     chunk_list = []
 
     for chunk in data_chunks:
+        chunk = chunk.dropna(subset=['label'])  # Removing rows with NaN labels
+        chunk['label'] = chunk['label'].astype(int)  # Ensure label column is of integer type
+        chunk = chunk[chunk['label'].between(0, 9)]  # Removing rows with labels outside the range 0-9
         chunk = chunk.astype('float32')
         chunk_list.append(chunk)
     
@@ -39,12 +46,7 @@ def main():
     output_train_data_path = args.output_train_data_path
     output_test_data_path = args.output_test_data_path
 
-    print("our download link is " + download_link)
-    print("our output_train_data_path is " + output_train_data_path)
-    print("our output_test_data_path is " + output_test_data_path)
-    
     output_data_path = os.path.dirname(output_train_data_path)
-    print("our output_data_path is " + output_data_path)
     
     # Step 1: Download Data
     wget.download(download_link.format(file='train'), f'{output_data_path}/train_csv.zip')
@@ -62,16 +64,18 @@ def main():
     train_df = load_and_process_data(train_data_path, chunk_size)
     test_df = load_and_process_data(test_data_path, chunk_size)
     
+    validate_labels(train_df)
+    validate_labels(test_df)
+    
     # Step 3: Preprocess Data
     ntrain = train_df.shape[0]
     all_data = pd.concat((train_df, test_df)).reset_index(drop=True)
     del train_df, test_df
     gc.collect()
     
-    print("all_data size is : {}".format(all_data.shape))
+    validate_labels(all_data)
     
     all_data = all_data.sample(frac=.1, random_state=42).astype('float32')
-    print("all_data size after reduction: {}".format(all_data.shape))
 
     all_data_X = (all_data.drop('label', axis=1).values.reshape(-1, 28, 28, 1) / 255.0).astype('float32')
     all_data_y = all_data.label
