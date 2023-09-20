@@ -13,13 +13,12 @@ def _make_parent_dirs_and_return_path(file_path: str):
     return file_path
 
 def main(download_link: str, output_data_path: str):
-    print("oh here we goooooo")
-    parser = argparse.ArgumentParser(description='Download, load, and preprocess data.')
-    parser.add_argument('--download-link', type=str, required=True, help='Link to download the data from.')
-    parser.add_argument('--output-data', type=_make_parent_dirs_and_return_path, required=True, help='Path to save the output data.')
-    args = parser.parse_args()
-    download_link = args.download_link
-    output_data_path = args.output_data
+    print("oh here we goooooo") 
+    _parser = argparse.ArgumentParser(prog='Download load preprocess data', description='')
+    _parser.add_argument("--download-link", dest="download_link", type=str, required=True, default=argparse.SUPPRESS)
+    _parser.add_argument("--output-data", dest="output_data_path", type=_make_parent_dirs_and_return_path, required=True, default=argparse.SUPPRESS)
+    _parsed_args = vars(_parser.parse_args())
+    _outputs = main(**_parsed_args)    
     # Step 1: Download Data
     os.makedirs(output_data_path, exist_ok=True)
     wget.download(download_link.format(file='train'), f'{output_data_path}/train_csv.zip')
