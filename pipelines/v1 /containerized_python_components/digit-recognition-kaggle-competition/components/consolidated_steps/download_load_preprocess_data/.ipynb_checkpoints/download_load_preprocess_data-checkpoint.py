@@ -38,7 +38,10 @@ def main():
         zip_ref.extractall(output_data_path)
     with zipfile.ZipFile(f"{output_data_path}/test_csv.zip", "r") as zip_ref:
         zip_ref.extractall(output_data_path)
-   
+    train_data_path = os.path.join(output_data_path, 'train.csv')
+    test_data_path = os.path.join(output_data_path, 'test.csv')
+    train_df = pd.read_csv(train_data_path)
+    test_df = pd.read_csv(test_data_path)
     # Step 3: Preprocess Data
     ntrain = train_df.shape[0]
     all_data = pd.concat((train_df, test_df)).reset_index(drop=True)
