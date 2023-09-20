@@ -48,7 +48,7 @@ def main():
     all_data = pd.concat((train_df, test_df)).reset_index(drop=True)
     print("all_data size is : {}".format(all_data.shape))
     
-    all_data = all_data.sample(frac=0.10, random_state=42)
+    all_data = all_data.sample(frac=.01, random_state=42)
     print("all_data size after reduction: {}".format(all_data.shape))
 
     all_data_X = all_data.drop('label', axis=1).values.reshape(-1, 28, 28, 1) / 255.0
