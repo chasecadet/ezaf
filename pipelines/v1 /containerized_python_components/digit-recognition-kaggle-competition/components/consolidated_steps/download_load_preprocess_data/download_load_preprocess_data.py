@@ -3,7 +3,6 @@ import zipfile
 import pickle
 import wget
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import train_test_split
 import argparse
 import gc
@@ -17,7 +16,7 @@ def validate_labels(df):
     assert df['label'].between(0, 9).all(), "Invalid label values found"
 
 def load_and_process_data(data_path, rows_at_a_time=50):
-    col_names = ['label'] + [f'pixel_{i}' for i in range(1, 29)]
+    col_names = ['label'] + [f'pixel_{i}' for i in range(784)]
     with pd.read_csv(data_path, chunksize=rows_at_a_time, header=None, names=col_names) as reader:
         chunk_list = []
         for chunk in reader:
@@ -29,13 +28,12 @@ def load_and_process_data(data_path, rows_at_a_time=50):
             except Exception as e:
                 print(f"An error occurred: {e}")
                 continue
-        
+
         data_df = pd.concat(chunk_list)
         del chunk_list
         gc.collect()
-        
-        return data_df
 
+        return data_df
 
 def main():
     print("oh here we goooooo") 
@@ -71,7 +69,6 @@ def main():
     validate_labels(train_df)
     validate_labels(test_df)
     
-    # Step 3: Preprocess Data
     ntrain = train_df.shape[0]
     all_data = pd.concat((train_df, test_df)).reset_index(drop=True)
     del train_df, test_df
@@ -79,9 +76,9 @@ def main():
     
     validate_labels(all_data)
     
-    all_data = all_data.sample(frac=.1, random_state=42).astype('float32')
-
-    all_data_X = (all_data.drop('label', axis=1).values.reshape(-1, 28, 28, 1) / 255.0).astype('float32')
+    all_data = all_data.sample(frac=.1, random_state=42)
+    
+    all_data_X = (all_data.drop('label', axis=1).values.reshape(-1, 28, 28, 1) / 255.0)
     all_data_y = all_data.label
 
     X = all_data_X[:ntrain].copy()
