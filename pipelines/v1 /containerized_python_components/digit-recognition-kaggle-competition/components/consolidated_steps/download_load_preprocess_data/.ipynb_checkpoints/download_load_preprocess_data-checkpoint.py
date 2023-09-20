@@ -23,10 +23,11 @@ def main():
     download_link = args.download_link
     output_train_data_path = args.output_train_data_path
     output_test_data_path = args.output_test_data_path
-
     print("our download link is " + download_link)
-
+    print("our output_train_data_path  is " + output_train_data_path )
+    print("our output_test_data_path is " + output_test_data_path )
     output_data_path = os.path.dirname(output_train_data_path)
+    print("our output_data_path is " + output_train_data_path)
     
     # Step 1: Download Data
     os.makedirs(output_data_path, exist_ok=True)
