@@ -13,11 +13,11 @@ implementation:
       - modeling_and_prediction.py
     args:
       - --preprocess-train-data-path
-      - {inputValue: preprocess_train_data_path}
+      - {inputPath: preprocess_train_data_path}
       - --preprocess-test-data-path
-      - {inputValue: preprocess_test_data_path}
+      - {inputPath: preprocess_test_data_path}
       - --model-path
-      - {inputValue: model_path}
+      - {inputPath: model_path}
       - --output-paths
       - {outputPath: mlpipeline_ui_metadata}
 
