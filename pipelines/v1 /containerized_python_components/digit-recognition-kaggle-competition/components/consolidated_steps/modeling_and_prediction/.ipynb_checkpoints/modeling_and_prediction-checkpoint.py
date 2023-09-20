@@ -83,7 +83,7 @@ def modeling_and_prediction(preprocess_train_data_path, preprocess_test_data_pat
         json.dump(metadata, metadata_file)
 
     conf_m_result = namedtuple('conf_m_result', ['mlpipeline_ui_metadata'])
-
+    print("done!")
     return conf_m_result(json.dumps(metadata))
 
 if __name__ == '__main__':
@@ -94,5 +94,6 @@ if __name__ == '__main__':
     parser.add_argument('--output-paths', type=str, required=True)
 
     args = parser.parse_args()
-    
+    print("entering main baby")
     modeling_and_prediction(args.preprocess_train_data_path, args.preprocess_test_data_path, args.model_path, args.output_paths)
+    print("at the end of the road")
