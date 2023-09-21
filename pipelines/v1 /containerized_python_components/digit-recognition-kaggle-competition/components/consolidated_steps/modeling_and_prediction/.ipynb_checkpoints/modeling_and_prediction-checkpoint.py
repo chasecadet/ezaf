@@ -14,6 +14,10 @@ from tensorflow.keras.models import load_model
 
 def modeling_and_prediction(preprocess_train_data_path, preprocess_test_data_path, model_path, mlpipeline_ui_metadata_path):
     
+    print("entering the modeling script")
+    _make_parent_dirs_and_return_path(model_path)
+    _make_parent_dirs_and_return_path(mlpipeline_ui_metadata_path)
+    
     with open(preprocess_train_data_path, 'rb') as f:
         X_train, y_train = pickle.load(f)
     
@@ -46,7 +50,6 @@ def modeling_and_prediction(preprocess_train_data_path, preprocess_test_data_pat
     test_loss, test_acc = model.evaluate(np.array(X_test), np.array(y_test), verbose=0)
     print("Test_loss: {}, Test_accuracy: {}".format(test_loss, test_acc))
 
-    os.makedirs(model_path, exist_ok=True)
     model.save(f'{model_path}/model.h5')
 
     # Step 2: Prediction
@@ -83,17 +86,20 @@ def modeling_and_prediction(preprocess_train_data_path, preprocess_test_data_pat
         json.dump(metadata, metadata_file)
 
     conf_m_result = namedtuple('conf_m_result', ['mlpipeline_ui_metadata'])
-    print("done!")
+    print("script done!")
     return conf_m_result(json.dumps(metadata))
 
+def _make_parent_dirs_and_return_path(file_path: str):
+    print("making the directories")
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    return file_path
+
 if __name__ == '__main__':
+    print("entering main")
     parser = argparse.ArgumentParser()
     parser.add_argument('--preprocess-train-data-path', type=str, required=True)
     parser.add_argument('--preprocess-test-data-path', type=str, required=True)
     parser.add_argument('--model-path', type=str, required=True)
     parser.add_argument('--output-paths', type=str, required=True)
-
     args = parser.parse_args()
-    print("entering main baby")
     modeling_and_prediction(args.preprocess_train_data_path, args.preprocess_test_data_path, args.model_path, args.output_paths)
-    print("at the end of the road")
