@@ -7,7 +7,7 @@ outputs:
   - {name: mlpipeline_ui_metadata, type: UI_metadata}
 implementation:
   container:
-    image: chasechristensen/mnist_predict:v5
+    image: chasechristensen/mnist_predict:v6
     command: 
       - python3
       - modeling_and_prediction.py
