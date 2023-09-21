@@ -7,7 +7,7 @@ outputs:
   - {name: mlpipeline_ui_metadata, type: UI_metadata}
 implementation:
   container:
-    image: chasechristensen/mnist_predict:v8
+    image: chasechristensen/mnist_predict:v9
     command: 
       - python3
       - modeling_and_prediction.py
@@ -17,7 +17,7 @@ implementation:
       - --preprocess-test-data-path
       - {inputPath: preprocess_test_data_path}
       - --model-path
-      - {inputPath: model_path}
+      - {inputValue: model_path}
       - --output-paths
       - {outputPath: mlpipeline_ui_metadata}
 
