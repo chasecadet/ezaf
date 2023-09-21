@@ -16,9 +16,9 @@ def modeling_and_prediction(preprocess_train_data_path, preprocess_test_data_pat
     
     print("entering the modeling script")
     model_path=_make_parent_dirs_and_return_path(model_path)
-    print("our model path is " model_path)
+    print("our model path is " + model_path)
     mlpipeline_ui_metadata_path=_make_parent_dirs_and_return_path(mlpipeline_ui_metadata_path)
-    print("our pipline path is " mlpipeline_ui_metadata_path)
+    print("our pipline path is " + mlpipeline_ui_metadata_path)
     
     with open(preprocess_train_data_path, 'rb') as f:
         X_train, y_train = pickle.load(f)
